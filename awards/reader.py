@@ -2,6 +2,11 @@ import re
 import pandas as pd
 
 def clean_col(c: str) -> str:
+    # Cleans and standardizes a column name:
+    # - Removes unwanted characters and line breaks
+    # - Removes "OG"
+    # - Strips leading/trailing whitespace
+    # - Replaces spaces with underscores
     c = str(c)
     c = c.replace("_x000D_", "").replace("\n", "")
     c = c.replace("OG", "").strip()
@@ -9,13 +14,19 @@ def clean_col(c: str) -> str:
     return c
 
 def extract_sem(colname: str):
-    # trailing ".1" => semester 2; otherwise semester 1
+    # Determines the semester for a subject column:
+    # - If column ends with ".1", it's semester 2; otherwise semester 1
+    # Returns (base column name, semester number)
     if colname.endswith(".1"):
         return colname[:-2], 2
     return colname, 1
 
 def read_sheet_flex(path) -> pd.DataFrame:
-    """Try several header rows. Prefer one that already contains 'Student' columns."""
+    """
+    Reads an Excel sheet, trying several possible header rows.
+    Returns the first DataFrame whose columns contain 'Student'.
+    If none match, returns the sheet with header=0.
+    """
     for hdr in [0, 1, 2, None]:
         try:
             df = pd.read_excel(path, header=hdr)
