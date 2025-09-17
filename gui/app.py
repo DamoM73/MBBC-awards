@@ -9,21 +9,24 @@ from awards.pipeline import process_file
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        # Set up main window properties
         self.title("MBBC Awards Processor (Y7–10)")
-        self.geometry("760x520")
-        self.minsize(720, 480)
-        if getattr(sys, 'frozen', False):
-            base_path = Path(sys._MEIPASS)  # temp folder created by PyInstaller
+
+        if getattr(sys, "frozen", False):
+            # cx_Freeze: no _MEIPASS. Use the executable's folder.
+            base_path = Path(sys.executable).parent
+            # PyInstaller fallback if present:
+            meipass = getattr(sys, "_MEIPASS", None)
+            if meipass:
+                base_path = Path(meipass)
         else:
-            base_path = Path(__file__).resolve().parent.parent  # project root
+            # running from source
+            base_path = Path(__file__).resolve().parent.parent
 
         icon_path = base_path / "logo.ico"
-
         try:
-            self.iconbitmap(icon_path)
+            self.iconbitmap(str(icon_path))
         except Exception as e:
-            print(f"Could not set icon: {e}")
+            print(f"Icon load failed: {e}")
         self.files = []           # List of selected Excel files
         self.out_dir = Path.cwd() # Output directory for processed files
         self._build()             # Build the GUI
